@@ -1,0 +1,101 @@
+﻿<Window x:Name="Window" x:Class="FaceMosaic.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:FaceMosaic.Controls"
+        xmlns:local="clr-namespace:FaceMosaic.Extensions"
+        xmlns:enums="clr-namespace:FaceMosaic.Enums"
+        mc:Ignorable="d"
+        Title="FaceMosaicControl" Height="600" Width="320"
+        Loaded="Window_Loaded"
+        Closed="Window_Closed"
+        >
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="300" />
+		</Grid.ColumnDefinitions>
+		<Grid x:Name="ControlsGrid" Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<StackPanel Margin="10">
+				<Button x:Name="PickerButton" Content="Use Picker" Click="PickerButton_Click" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="10" />
+				<StackPanel Orientation="Horizontal" Height="30">
+					<ComboBox x:Name="WindowComboBox" SelectionChanged="WindowComboBox_SelectionChanged" Margin="10,2,10,2" Width="200">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding MainWindowTitle}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+					<Button Width="50" Click="UpdateButton_Click" HorizontalAlignment="Stretch">更新</Button>
+				</StackPanel>
+				<GroupBox Height="200" Header="クリッピング">
+					<StackPanel Margin="10">
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">左</Label>
+							<!--
+							<controls:NumericUpDown x:Name="CropLeft" Value="{Binding Settings.CropLeft, ElementName=Window, Mode=TwoWay}" Width="100" TextChanged="OnChangedCrop" />
+							-->
+							<controls:NumericUpDown x:Name="CropLeft" Maximum="10000" Value="{Binding Settings.CropLeft, ElementName=Window, Mode=TwoWay}" Width="100" TextChanged="OnChangedCrop" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">上</Label>
+							<controls:NumericUpDown x:Name="CropTop" Maximum="10000" Value="{Binding Settings.CropTop, ElementName=Window, Mode=TwoWay}" Width="100" TextChanged="OnChangedCrop" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">右</Label>
+							<controls:NumericUpDown x:Name="CropRight" Maximum="10000" Value="{Binding Settings.CropRight, ElementName=Window, Mode=TwoWay}" Width="100" TextChanged="OnChangedCrop" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">下</Label>
+							<controls:NumericUpDown x:Name="CropBottom" Maximum="10000" Value="{Binding Settings.CropBottom, ElementName=Window, Mode=TwoWay}" Width="100" TextChanged="OnChangedCrop" />
+						</StackPanel>
+					</StackPanel>
+				</GroupBox>
+				<GroupBox Height="210" Header="モザイクの設定">
+					<StackPanel Margin="10">
+						
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100">マスキングの種類</Label>
+							<ComboBox x:Name="MaskingTypeComboBox" Width="100" Height="30"
+							          ItemsSource="{Binding Source={local:EnumBindingSource {x:Type enums:MaskingType}}}"
+							          SelectedItem="{Binding Path=Settings.MaskingType, ElementName=Window, Mode=TwoWay}"
+							          HorizontalContentAlignment="Center"
+							          VerticalContentAlignment="Center">
+							</ComboBox>
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">拡大する範囲</Label>
+							<controls:NumericUpDown x:Name="Inflate" Width="100" Maximum="100" Value="{Binding Path=Settings.Inflate, ElementName=Window, Mode=TwoWay}"/>
+							<Label HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">px</Label>
+						</StackPanel>
+						
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<StackPanel.ToolTip>
+								<WrapPanel VerticalAlignment="Center">
+									<Label Content="検出した範囲に対するモザイクの分割数。数字が高くなるほどモザイクのブロックが小さくなる。&#xD;&#xA;例えば4にした場合、検出された範囲の縦か横の小さい数字を4で割った値がモザイクのブロックサイズとなる。"/>
+								</WrapPanel>
+							</StackPanel.ToolTip>
+							<Label Width="100" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">モザイクの分割数</Label>
+							<controls:NumericUpDown x:Name="PixelateDivisions" Width="100" MaxWidth="1000" Value="{Binding Path=Settings.PixelateDivisions, ElementName=Window, Mode=TwoWay}"/>
+						</StackPanel>
+						
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">ぼかしの強度</Label>
+							<controls:NumericUpDown x:Name="BlurStrength" Width="100" Maximum="100" Value="{Binding Path=Settings.BlurStrength, ElementName=Window, Mode=TwoWay}"/>
+						</StackPanel>
+						
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">検出結果の表示</Label>
+							<CheckBox IsChecked="{Binding Path=Settings.Plotting, ElementName=Window, Mode=TwoWay}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+						</StackPanel>
+					</StackPanel>
+				</GroupBox>
+				<Button Click="StopCaptureButton_OnClick" Margin="0, 10, 0, 0">キャプチャの停止</Button>
+			</StackPanel>
+		</Grid>
+	</Grid>
+</Window>

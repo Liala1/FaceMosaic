@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaceMosaic", "FaceMosaic\FaceMosaic.csproj", "{CE4F7086-9366-4600-9496-3C74DB0E4AEE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptureCore.Win32", "CaptureCore.Win32\CaptureCore.Win32.csproj", "{32D461F8-C0D2-4F8C-876A-2BF2633D9B97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CaptureCore", "CaptureCore\CaptureCore.csproj", "{3DA122F5-C710-4363-B0E0-C20107F4AB03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoloSharp", "YoloSharp\Source\YoloSharp\YoloSharp.csproj", "{6B18C7FE-9E71-4BB7-BD9C-DAFF7FE08F51}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+		Debug|x64 = Debug|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32D461F8-C0D2-4F8C-876A-2BF2633D9B97}.Release|x64.ActiveCfg = Release|x64
+		{32D461F8-C0D2-4F8C-876A-2BF2633D9B97}.Release|x64.Build.0 = Release|x64
+		{32D461F8-C0D2-4F8C-876A-2BF2633D9B97}.Debug|x64.ActiveCfg = Debug|x64
+		{32D461F8-C0D2-4F8C-876A-2BF2633D9B97}.Debug|x64.Build.0 = Debug|x64
+		{CE4F7086-9366-4600-9496-3C74DB0E4AEE}.Release|x64.ActiveCfg = Release|x64
+		{CE4F7086-9366-4600-9496-3C74DB0E4AEE}.Release|x64.Build.0 = Release|x64
+		{CE4F7086-9366-4600-9496-3C74DB0E4AEE}.Debug|x64.ActiveCfg = Debug|x64
+		{CE4F7086-9366-4600-9496-3C74DB0E4AEE}.Debug|x64.Build.0 = Debug|x64
+		{3DA122F5-C710-4363-B0E0-C20107F4AB03}.Debug|x64.ActiveCfg = Debug|x64
+		{3DA122F5-C710-4363-B0E0-C20107F4AB03}.Debug|x64.Build.0 = Debug|x64
+		{3DA122F5-C710-4363-B0E0-C20107F4AB03}.Release|x64.ActiveCfg = Release|x64
+		{3DA122F5-C710-4363-B0E0-C20107F4AB03}.Release|x64.Build.0 = Release|x64
+		{6B18C7FE-9E71-4BB7-BD9C-DAFF7FE08F51}.Debug|x64.ActiveCfg = Debug|x64
+		{6B18C7FE-9E71-4BB7-BD9C-DAFF7FE08F51}.Debug|x64.Build.0 = Debug|x64
+		{6B18C7FE-9E71-4BB7-BD9C-DAFF7FE08F51}.Release|x64.ActiveCfg = Release|x64
+		{6B18C7FE-9E71-4BB7-BD9C-DAFF7FE08F51}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal
