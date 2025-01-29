@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:FaceMosaic.Extensions"
         xmlns:enums="clr-namespace:FaceMosaic.Enums"
         mc:Ignorable="d"
-        Title="FaceMosaicControl" Height="600" Width="320"
+        Title="FaceMosaicControl" Height="640" Width="320"
         Loaded="Window_Loaded"
         Closed="Window_Closed"
         >
@@ -92,6 +92,21 @@
 							<Label Width="100" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">検出結果の表示</Label>
 							<CheckBox IsChecked="{Binding Path=Settings.Plotting, ElementName=Window, Mode=TwoWay}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
 						</StackPanel>
+					</StackPanel>
+				</GroupBox>
+				<GroupBox Header="" BorderBrush="{x:Null}" Margin="10, 0, 0, 0">
+						<StackPanel Orientation="Horizontal" Margin="0, 2, 0, 2">
+							<Label Width="100">使用するモデル</Label>
+							<ComboBox x:Name="YoloModelComboBox" Width="140" Height="30"
+							          SelectionChanged="YoloModelComboBox_SelectionChanged"
+							          HorizontalContentAlignment="Center"
+							          VerticalContentAlignment="Center">
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding DisplayName}" />
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
 					</StackPanel>
 				</GroupBox>
 				<Button Click="StopCaptureButton_OnClick" Margin="0, 10, 0, 0">キャプチャの停止</Button>

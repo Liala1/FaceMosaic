@@ -34,6 +34,9 @@ public partial class Settings : ObservableObject
 	[ObservableProperty]
 	bool plotting;
 	
+	[ObservableProperty]
+	string yoloModelPath = "yolov11n-face.onnx";
+	
 	public static Settings Current { get; private set; } = null!;
 
 	public static Settings Load()

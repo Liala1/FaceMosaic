@@ -18,6 +18,7 @@ using Compunet.YoloSharp.Data;
 using FaceMosaic.Enums;
 using FaceMosaic.Extensions;
 using FaceMosaic.Helpers;
+using FaceMosaic.Models;
 using Microsoft.ML.OnnxRuntime;
 using OpenCvSharp;
 using SixLabors.ImageSharp;
@@ -40,6 +41,7 @@ public partial class MainWindow : Window
 	readonly DisplayWindow displayWindow = new();
 
 	ObservableCollection<Process>? processes;
+	ObservableCollection<YoloModel>? models;
 
 	readonly AutoResetEvent frameAvailableEvent = new (false);
 	readonly CancellationTokenSource cancellationTokenSource = new ();
@@ -47,7 +49,10 @@ public partial class MainWindow : Window
 	readonly ConcurrentQueue<(TimeSpan timestamp, CaptureImage<Bgra32> captureImage)> frameQueue = new();
 	TimeSpan prevTimestamp = TimeSpan.Zero;
 
-	readonly YoloPredictor predictor = null!;
+	readonly Dictionary<string, YoloPredictor> predictorCache = new();
+	readonly Dictionary<string, CancellationTokenSource> disposeCancellations = new();
+	YoloPredictor predictor = null!;
+	readonly YoloPredictorOptions predictorOptions;
 	readonly MatPool matPool = new (3);
 	WriteableBitmap? writeableBitmap;
 	
@@ -58,27 +63,29 @@ public partial class MainWindow : Window
 		
 		capture = new GraphicsCaptureApplication(OnFrameArrived);
 		processingTask = Task.Run(() => ProcessFrameAsync(cancellationTokenSource.Token));
+		
+		var sessionOptions = new SessionOptions
+		{
+			EnableCpuMemArena = true,
+			EnableMemoryPattern = true,
+			GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL,
+			ExecutionMode = ExecutionMode.ORT_PARALLEL,
+			IntraOpNumThreads = 4,
+			InterOpNumThreads = 4,
+		};
+		
+		predictorOptions = new YoloPredictorOptions
+		{
+			SessionOptions = sessionOptions,
+			UseDml = true,
+			UseCuda = false,
+		};
 
 		try
 		{
-			var sessionOptions = new SessionOptions
-			{
-				EnableCpuMemArena = true,
-				EnableMemoryPattern = true,
-				GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_ALL,
-				ExecutionMode = ExecutionMode.ORT_PARALLEL,
-				IntraOpNumThreads = 4,
-				InterOpNumThreads = 4,
-			};
-
-			var options = new YoloPredictorOptions
-			{
-				SessionOptions = sessionOptions,
-				UseDml = true,
-				UseCuda = false,
-			};
+			predictor = CreatePredictor(Settings.YoloModelPath);
 			
-			predictor = new YoloPredictor("yolov11n-face.onnx", options);
+			//predictor = new YoloPredictor("yolov11n-face.onnx", predictorOptions);
 		}
 		catch (Exception e)
 		{
@@ -89,7 +96,7 @@ public partial class MainWindow : Window
 		
 		InitializeComponent();
 	}
-
+	
 	
 	void Window_Loaded(object sender, RoutedEventArgs e)
 	{
@@ -97,6 +104,7 @@ public partial class MainWindow : Window
 		hwnd = (HWND)interopWindow.Handle;
 		
 		InitializeWindowList();
+		InitializeModelList();
 	}
 
 	void Window_Closed(object? sender, EventArgs e)
@@ -159,6 +167,13 @@ public partial class MainWindow : Window
 		{
 			WindowComboBox.IsEnabled = false;
 		}
+	}
+
+	void InitializeModelList()
+	{
+		models = new ObservableCollection<YoloModel>(GetModelList());
+		YoloModelComboBox.ItemsSource = models;
+		YoloModelComboBox.SelectedItem = models.FirstOrDefault(x => x.ModelName == Settings.YoloModelPath);
 	}
 
 	async Task StartPickerCaptureAsync()
@@ -383,5 +398,89 @@ public partial class MainWindow : Window
 		capture.StopCapture();
 		WindowComboBox.SelectedIndex = -1;
 		displayWindow.Hide();
+	}
+
+	YoloPredictor CreatePredictor(string model)
+	{
+		return new YoloPredictor(Path.Join("models", model), predictorOptions);
+	}
+	
+	void YoloModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		var comboBox = (ComboBox)sender;
+		var model = (YoloModel)comboBox.SelectedItem;
+
+		if (model == null) return;
+		
+		foreach (YoloModel item in e.RemovedItems)
+		{
+			_ = SchedulePredictorDisposeAsync(item.ModelName);
+		}
+
+		Settings.YoloModelPath = model.ModelName;
+		if (predictorCache.TryGetValue(model.ModelName, out var pred))
+		{
+			predictor = pred;
+			if (disposeCancellations.TryGetValue(model.ModelName, out var cts))
+			{
+				cts.Cancel();
+			}
+			return;
+		}
+		
+		pred = CreatePredictor(model.ModelName);
+		predictorCache[model.ModelName] = pred;
+		predictor = pred;
+	}
+
+	async Task SchedulePredictorDisposeAsync(string modelName)
+	{
+		if (disposeCancellations.TryGetValue(modelName, out var existingCts))
+		{
+			await existingCts.CancelAsync();
+			existingCts.Dispose();
+		}
+
+		var cts = new CancellationTokenSource();
+		disposeCancellations[modelName] = cts;
+		try
+		{
+			await Task.Delay(TimeSpan.FromMinutes(1), cts.Token);
+
+			if (predictorCache.Remove(modelName, out var oldPredictor))
+			{
+				oldPredictor.Dispose();
+			}
+		}
+		catch (OperationCanceledException)
+		{
+		}
+		finally
+		{
+			cts.Dispose();
+			disposeCancellations.Remove(modelName);
+		}
+	}
+
+	List<YoloModel> GetModelList()
+	{
+		var result = new List<YoloModel>();
+		foreach (var file in Directory.EnumerateFiles("./models", "*.onnx", SearchOption.AllDirectories))
+		{
+			var fileName = Path.GetFileName(file);
+			result.Add(new YoloModel(fileName, GetDisplayNameOfModel(fileName)));
+		}
+		return result;
+	}
+
+	string GetDisplayNameOfModel(string fileName)
+	{
+		return fileName switch
+		{
+			"yolov11n-face.onnx" => "軽量モデル",
+			"yolov11s-face.onnx" => "バランスモデル",
+			"yolov11m-face.onnx" => "高負荷モデル",
+			_ => fileName
+		};
 	}
 }
